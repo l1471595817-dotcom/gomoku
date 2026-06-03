@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>五子棋大师 · 侠盗对决</title><link rel="stylesheet" href="style.css">
+</head><body>
+<div id="safe">
+<div id="lobby">
+<h1>🎋 五子棋大师</h1><div class="sub">侠盗对决 · 智力战场 🎯</div>
+<div class="selRow">
+<div class="selCol"><div class="lb">选择场景</div>
+<div class="opts">
+<div class="card sel" data-t="0"><span>🎋</span><div class="nm">竹林雅韵</div></div>
+<div class="card" data-t="1"><span>🖌️</span><div class="nm">水墨丹青</div></div>
+<div class="card" data-t="2"><span>🌸</span><div class="nm">樱花烂漫</div></div>
+<div class="card" data-t="3"><span>🌌</span><div class="nm">星河璀璨</div></div>
+</div></div></div>
+<div class="btns"><button id="btnC" class="pri">🎮 创建房间</button><button id="btnSJ" class="sec">🔗 加入房间</button></div>
+<div id="ja" style="display:none"><div class="jr"><input id="ri" type="text" maxlength="4" placeholder="0000"><button id="btnJ" class="pri">加入</button></div></div>
+<div id="rd" style="display:none"><div class="rcb"><div class="rc" id="rct">0000</div><div class="rl">把房间号发给对方~</div></div></div>
+<div class="st" id="ls">创建或加入房间开始对弈 🎯</div>
+<div id="sa" style="display:none"><button id="btnGo" class="pri" style="padding:12px 36px;margin:6px">🎯 开始对弈</button></div>
+<footer>五子棋大师 v2.0</footer></div>
+
+<div id="game" style="display:none">
+<div class="gh"><h1 id="gt">🎋 五子棋大师</h1><span id="cb">🟡 连接</span></div>
+<div class="hud">
+<div class="pc"><span id="p1n" style="font-weight:600;font-size:11px">我</span><div class="hp-r"><div class="hp-f" id="hp1"></div></div></div>
+<div style="display:flex;gap:4px">
+<button class="skBtn" id="btnSkill" title="侠盗老鼠">🐭<small>侠盗</small></button>
+<button class="skBtn" id="btnShield" title="护盾">🛡️<small>护盾</small>(<span id="shieldCnt">0</span>)</button>
+</div>
+<div class="pc"><span id="p2n" style="font-weight:600;font-size:11px">对手</span><div class="hp-r"><div class="hp-f" id="hp2"></div></div></div>
+</div>
+<div id="boardArea">
+<canvas id="gc"></canvas>
+<div id="ghostStone" style="display:none;position:absolute;pointer-events:none;z-index:5;border-radius:50%;opacity:0.5;transition:none"></div>
+</div>
+<div id="ctrl"><button id="btnUndo" disabled>↩️ 悔棋</button><button id="btnRestart">🔄 重开</button><button id="btnLeave">🚪 退出</button></div>
+<div id="godPanel"><div class="gHd">👑 上帝工具箱</div>
+<div class="gBtns"><button id="gAI">🤖 大师AI代下</button><button id="gDb">🔁 双倍下子</button><button id="gSk">🐭 侠盗老鼠</button><button id="gUndo">↩️ 一键悔棋</button></div></div>
+<span id="gi" style="display:none">✨ 上帝模式已激活</span>
+</div></div>
+<div id="wo"><div class="wc"><span class="we" id="we">🎉</span><div class="wt" id="wt">你赢了！</div><button id="wok">好的 🎯</button></div></div>
+<div id="toast"></div>
+<div id="parContainer"></div>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.4/dist/mqtt.min.js"></script>
+<script src="client.js"></script>
+</body></html>
