@@ -3,445 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
-<title>五子棋 · 在线对战</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#1a1a2e;--surface:#16213e;--gold:#e8b830;--text:#f0e6d3;--text-dim:#a09070;--btn-bg:#2a2a4a;--radius:12px;--shadow:0 8px 32px rgba(0,0,0,0.5)}
-html,body{height:100%}
-body{font-family:"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px;background-image:radial-gradient(ellipse at 20% 50%,#1a1a3e 0%,#0d0d1a 100%)}
-#app{background:var(--surface);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);max-width:620px;width:100%;text-align:center;border:1px solid rgba(232,184,48,0.15)}
-#lobby{padding:20px 0}#lobby h1{font-size:26px;color:var(--gold);letter-spacing:2px;margin-bottom:6px}#lobby .sub{font-size:13px;color:var(--text-dim);margin-bottom:24px}
-.lobby-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
-.lobby-btns button{padding:12px 28px;border:none;border-radius:10px;font-size:15px;cursor:pointer;transition:all 0.2s;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#1a1a2e;font-weight:700;box-shadow:0 4px 16px rgba(232,184,48,0.2)}
-.lobby-btns button:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(232,184,48,0.3)}
-.lobby-btns button.sec{background:var(--btn-bg);color:var(--text);box-shadow:none;border:1px solid rgba(255,255,255,0.06)}
-.lobby-btns button.sec:hover{background:var(--btn-hover);box-shadow:none}
-.lobby-btns button:disabled{opacity:0.4;cursor:not-allowed}
-.room-input{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;margin:8px 0}
-.room-input input{padding:10px 16px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.2);color:var(--text);font-size:18px;width:140px;text-align:center;letter-spacing:4px;outline:none}
-.room-input input:focus{border-color:var(--gold)}
-.room-code-box{display:inline-block;padding:14px 32px;margin:10px 0;background:rgba(0,0,0,0.3);border-radius:12px;border:2px dashed var(--gold)}
-.room-code-box .code{font-size:40px;font-weight:700;color:var(--gold);letter-spacing:8px;user-select:all}
-.room-code-box .label{font-size:12px;color:var(--text-dim);margin-top:4px}
-.status-line{font-size:13px;color:var(--text-dim);margin:8px 0;min-height:20px}
-.status-line.success{color:#48e878}.status-line.error{color:#e84848}.status-line.waiting{color:var(--gold);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-.player-info{display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;margin:4px 0}
-.player{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;background:rgba(255,255,255,0.04)}
-.player .dot{width:11px;height:11px;border-radius:50%;display:inline-block}
-.player .dot.black{background:radial-gradient(circle at 35% 35%,#555,#111);border:1px solid #666}
-.player .dot.white{background:radial-gradient(circle at 35% 35%,#fff,#ccc);border:1px solid #999}
-.player.active{background:rgba(232,184,48,0.12);border:1px solid rgba(232,184,48,0.2)}
-.conn-status{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-dim);margin-top:4px}
-.conn-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-.conn-dot.online{background:#48e878;box-shadow:0 0 6px rgba(72,232,120,0.5)}
-.conn-dot.offline{background:#e84848;box-shadow:0 0 6px rgba(232,72,72,0.5)}
-.turn-area{font-size:14px;color:var(--text-dim);margin:6px 0}
-.thinking{display:none;color:var(--gold)}
-#boardWrap{position:relative;margin:10px auto 0;width:100%;aspect-ratio:1/1;max-width:560px;border-radius:8px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.2),0 4px 20px rgba(0,0,0,0.4)}
-#boardWrap canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:none}
-.controls{display:flex;gap:10px;justify-content:center;margin:10px 0 0;flex-wrap:wrap}
-.controls button{padding:7px 16px;border:none;border-radius:8px;background:var(--btn-bg);color:var(--text);font-size:13px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,0.06)}
-.controls button:hover{background:var(--btn-hover);transform:translateY(-1px)}
-.controls button:disabled{opacity:0.35;cursor:not-allowed;transform:none}
-
-#godPanel{margin-top:6px;overflow:hidden;max-height:0;transition:max-height 0.4s,opacity 0.3s,transform 0.3s;opacity:0;transform:translateY(-8px);border-radius:10px;background:rgba(232,184,48,0.06);border:1px solid rgba(232,184,48,0.12)}
-#godPanel.open{max-height:300px;opacity:1;transform:translateY(0);padding:10px}
-.god-header{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;color:var(--gold);margin-bottom:8px}
-.god-btns{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
-.god-btns button{padding:6px 12px;border:none;border-radius:8px;font-size:12px;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:4px;background:rgba(232,184,48,0.12);color:var(--gold);border:1px solid rgba(232,184,48,0.2)}
-.god-btns button:hover{background:rgba(232,184,48,0.2)}
-.god-btns button.active{background:rgba(232,184,48,0.25);box-shadow:0 0 12px rgba(232,184,48,0.15)}
-#winOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity 0.5s}
-#winOverlay.show{opacity:1;pointer-events:auto}
-.win-card{background:var(--surface);border-radius:20px;padding:36px 44px 28px;text-align:center;border:1px solid rgba(232,184,48,0.2);box-shadow:0 20px 60px rgba(0,0,0,0.6);transform:scale(0.85) translateY(20px);transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1)}
-#winOverlay.show .win-card{transform:scale(1) translateY(0)}
-.win-emoji{font-size:52px;margin-bottom:6px;display:block}
-.win-text{font-size:24px;font-weight:700;margin-bottom:4px}
-#toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);z-index:200;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:600;background:rgba(232,184,48,0.15);color:var(--gold);border:1px solid rgba(232,184,48,0.25);backdrop-filter:blur(8px);opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);pointer-events:none;white-space:nowrap}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.error{color:#e84848;border-color:rgba(232,72,72,0.25)}
-footer{font-size:10px;color:var(--text-dim);opacity:0.2;margin-top:6px;user-select:none}
-</style>
+<title>五子棋 · 萌宠对战</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div id="app">
-<div id="lobby">
-<h1>🏆 五子棋</h1>
-<div class="sub">在线对战 · 情侣模式</div>
-<div class="lobby-btns">
-<button id="btnCreate">🎮 创建房间</button>
-<button id="btnShowJoin" class="sec">🔗 加入房间</button>
-</div>
-<div id="joinArea" style="display:none">
-<div class="room-input">
-<input id="roomInput" type="text" maxlength="4" placeholder="输入房间号" autocomplete="off">
-<button id="btnJoin" class="sec">加入</button>
-</div>
-</div>
-<div id="roomDisplay" style="display:none">
-<div class="room-code-box">
-<div class="code" id="roomCodeText">0000</div>
-<div class="label">将房间号发给对方</div>
-</div>
-</div>
-<div class="status-line" id="lobbyStatus">创建或加入一个房间开始游戏</div>
-<div id="startArea" style="display:none">
-<button id="btnStart" style="padding:12px 36px;border:none;border-radius:10px;font-size:16px;cursor:pointer;transition:all 0.2s;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#1a1a2e;font-weight:700;box-shadow:0 4px 16px rgba(232,184,48,0.2);margin-top:8px">🎯 开始游戏</button>
-</div>
-</div>
-<div id="game" style="display:none">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-<h1 style="font-size:18px;color:var(--gold);letter-spacing:1px;user-select:none;cursor:default" id="gameTitle">🏆 五子棋</h1>
-<div class="conn-status"><span class="conn-dot online" id="connDot"></span><span id="connText">已连接</span></div>
-</div>
-<div class="player-info">
-<div class="player active" id="playerMe"><span class="dot" id="meDot"></span><span class="name" id="meName">我</span></div>
-<span style="opacity:0.3;font-size:13px">VS</span>
-<div class="player" id="playerOpp"><span class="dot" id="oppDot"></span><span class="name" id="oppName">对手</span></div>
-</div>
-<div class="turn-area"><span id="turnText">等待开始...</span><span class="thinking" id="oppThinking">· 对方思考中</span></div>
-<div id="boardWrap"><canvas id="board"></canvas></div>
-<div class="controls">
-<button id="btnRestart">🔄 重新开始</button>
-<button id="btnUndo" disabled>↩️ 悔棋</button>
-<button id="btnLeave">🚪 退出房间</button>
+
+  <!-- ===== Lobby ===== -->
+  <div id="lobby">
+    <h1>🎮 五子棋</h1>
+    <div class="sub">和好姐妹一起玩吧 ✨</div>
+
+    <div class="char-select">
+      <div class="label">选择你的角色</div>
+      <div class="char-options">
+        <div class="char-card selected" data-idx="0">
+          <span class="emoji">😺</span>
+          <div class="name">元气猫猫</div>
+        </div>
+        <div class="char-card" data-idx="1">
+          <span class="emoji">🐶</span>
+          <div class="name">发呆汪汪</div>
+        </div>
+        <div class="char-card" data-idx="2">
+          <span class="emoji">🐰</span>
+          <div class="name">傲娇兔兔</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="lobby-btns">
+      <button id="btnCreate" class="primary">🎮 创建房间</button>
+      <button id="btnShowJoin" class="secondary">🔗 加入房间</button>
+    </div>
+
+    <div id="joinArea" style="display:none">
+      <div class="join-row">
+        <input id="roomInput" type="text" maxlength="4" placeholder="0000" autocomplete="off">
+        <button id="btnJoin" class="primary" style="padding:10px 18px;font-size:14px">加入</button>
+      </div>
+    </div>
+
+    <div id="roomDisplay" style="display:none">
+      <div class="room-code-box">
+        <div class="code" id="roomCodeText">0000</div>
+        <div class="label">把房间号发给对方~</div>
+      </div>
+    </div>
+
+    <div class="status-line" id="lobbyStatus">创建或加入一个房间开始游戏 🎯</div>
+
+    <div id="startArea" style="display:none">
+      <button id="btnStart" class="primary" style="padding:12px 36px;font-size:16px;margin-top:6px">
+        🎯 开始游戏
+      </button>
+    </div>
+
+    <footer>五子棋 · 萌宠对战</footer>
+  </div>
+
+  <!-- ===== Game ===== -->
+  <div id="game" style="display:none">
+    <div class="game-header">
+      <h1 id="gameTitle">🏆 五子棋</h1>
+      <span class="conn-badge" id="connBadge">🟡 连接中</span>
+    </div>
+
+    <div class="player-row">
+      <div class="player-card" id="player1Card">
+        <div id="p1Active">
+          <span class="avatar" id="p1Avatar">😺</span>
+          <div>
+            <div class="pname" id="p1Name">我</div>
+            <span class="pdot black" id="p1Dot"></span>
+          </div>
+        </div>
+      </div>
+
+      <span style="font-size:18px;opacity:0.3">⚔️</span>
+
+      <div class="player-card" id="player2Card">
+        <div id="p2Active">
+          <span class="avatar" id="p2Avatar">🐶</span>
+          <div>
+            <div class="pname" id="p2Name">对手</div>
+            <span class="pdot white" id="p2Dot"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="turn-text" id="turnText">等待开始...</div>
+
+    <div id="boardWrap">
+      <canvas id="board"></canvas>
+    </div>
+
+    <div class="control-btns">
+      <button id="eggBtn">🥚 扔鸡蛋</button>
+      <button id="restartBtn">🔄 再来一局</button>
+      <button id="leaveBtn">🚪 退出</button>
+    </div>
+
+    <div class="taunt-input">
+      <input id="tauntInput" type="text" placeholder="输入嘲讽..." maxlength="30">
+      <button id="tauntSend">发送 💬</button>
+    </div>
+
+    <div id="godPanel">
+      <div class="god-header">👑 上帝工具箱</div>
+      <div class="god-btns">
+        <button id="godDouble">🔁 连下多子</button>
+        <button id="godAi">🤖 AI 帮下</button>
+      </div>
+    </div>
+
+    <div style="text-align:right;margin-top:2px">
+      <span class="god-indicator" id="godIndicator" style="display:none">✨ 上帝模式已激活</span>
+    </div>
+  </div>
 </div>
 
-<div id="godPanel">
-<div class="god-header">👑 <span style="font-size:10px;opacity:0.5">⚡</span></div>
-<div class="god-btns">
-<button id="godAi">🤖 AI 替我下</button>
-<button id="godDouble">🔁 双倍落子</button>
-<button id="godRemove">🗑️ 移除对手棋子</button>
-<button id="godSwap">🔄 交换黑白</button>
-</div>
-</div>
-<footer>你和她的五子棋</footer>
-</div>
-</div>
+<!-- ===== Win ===== -->
 <div id="winOverlay">
-<div class="win-card">
-<span class="win-emoji" id="winEmoji">🎉</span>
-<div class="win-text" id="winText">你赢了！</div>
-<button id="winOk" style="padding:10px 28px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),var(--gold-dim));color:#1a1a2e;font-size:15px;font-weight:700;cursor:pointer;margin-top:16px">好的 🎯</button>
+  <div class="win-card">
+    <span class="win-emoji" id="winEmoji">🎉</span>
+    <div class="win-text" id="winText">你赢了！</div>
+    <button id="winOk">好的 🎯</button>
+  </div>
 </div>
-</div>
+
+<!-- ===== Toast ===== -->
 <div id="toast"></div>
-<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.4/dist/mqtt.min.js"></script>
-<script>
-// ===== 常量 =====
-var BS=15,MT=0,BK=1,WT=2;
 
-// ===== DOM 引用 =====
-var el={};
-["btnCreate","btnShowJoin","btnJoin","roomInput","roomDisplay","roomCodeText","lobbyStatus","startArea","btnStart","joinArea",
- "btnRestart","btnUndo","btnLeave","turnText","oppThinking","meDot","oppDot","meName","oppName",
- "playerMe","playerOpp","connDot","connText","winOverlay","winEmoji","winText","winOk",
- "toast","godPanel","godHint","godAi","godDouble","godRemove","godSwap",
- "lobby","game","boardWrap","board","gameTitle"].forEach(function(id){el[id]=document.getElementById(id)});
-
-var canvas=el.board;
-var ctx=canvas.getContext("2d");
-
-// ===== 状态 =====
-var board=[],cp=BK,gO=false,wn=null,wc=[],lm=null,hs=[],bS=0,wS=0;
-var P,CS,CSz,dpr=1;
-var isHost=false,gSt=false,mC,oC;
-var mc=null,rc="";
-var dM=false,dP=false;
-var tC=0,tmr=null,wU=false;
-
-// ===== MQTT =====
-function tp(){return "gm/"+rc+"/"+(isHost?"h":"j")}
-function op(){return "gm/"+rc+"/"+(isHost?"j":"h")}
-
-function cnM(){
-  if(mc){try{mc.end(true)}catch(e){}mc=null}
-  var cid="g_"+Math.random().toString(36).substring(2,10);
-  mc=mqtt.connect("wss://brocker-cn.emqx.io:8084/mqtt",{clientId:cid,clean:true});
-  mc.on("connect",function(){
-    mc.subscribe(op());
-    if(isHost){
-      el.roomCodeText.textContent=rc;
-      el.roomDisplay.style.display="block";
-      st("等待对方加入...","waiting");
-      el.btnCreate.style.display="none";
-      el.btnShowJoin.style.display="none";
-    }else{st("已连接！等待房主开始游戏","success")}
-    mc.publish(tp(),JSON.stringify({t:isHost?"h":"j"}));
-  });
-  mc.on("message",function(t,m){
-    var d;try{d=JSON.parse(m.toString())}catch(e){return}
-    if(d.t==="j"){st("对手已连接！","success");el.startArea.style.display="block"}
-    if(d.t==="h"){st("已连接！等待房主开始游戏","success")}
-    if(d.t==="s"){
-      mC=d.mC;oC=d.oC;
-      gSt=true;el.lobby.style.display="none";el.game.style.display="block";
-      ib();uP();rc2();u();
-      el.connDot.className="conn-dot online";
-      el.connText.textContent="已连接";
-    }
-    if(d.t==="mv"){rm(d.r,d.c)}
-    if(d.t==="un"){un()}
-    if(d.t==="rs"){ib();toast("对方请求重新开始","info")}
-  });
-  mc.on("error",function(){
-    if(isHost){st("创建房间失败","error");toast("连接失败","error");el.btnCreate.disabled=false}
-    else{st("连接失败","error");toast("连接失败","error");el.btnJoin.disabled=false}
-  });
-  mc.on("offline",function(){
-    if(gSt){el.connDot.className="conn-dot offline";el.connText.textContent="断开";toast("连接断开，请刷新页面","error")}
-    else{st("连接断开","error");rL()}
-  });
-}
-
-// ===== 房间逻辑 =====
-el.btnCreate.addEventListener("click",function(){
-  st("正在生成房间...","waiting");
-  el.btnCreate.disabled=true;
-  rc=Math.floor(1000+Math.random()*9000).toString();
-  isHost=true;cnM();
-});
-
-el.btnShowJoin.addEventListener("click",function(){
-  el.joinArea.style.display="block";
-  el.btnShowJoin.style.display="none";
-});
-
-el.btnJoin.addEventListener("click",function(){
-  var code=el.roomInput.value.trim();
-  if(!code||code.length!==4||isNaN(code)){toast("输入4位房间号","error");return}
-  st("正在连接...","waiting");
-  rc=code;el.btnJoin.disabled=true;isHost=false;cnM();
-});
-
-el.roomInput.addEventListener("keydown",function(e){if(e.key==="Enter")el.btnJoin.click()});
-
-el.btnStart.addEventListener("click",function(){
-  if(!mc||!mc.connected){toast("连接已断开","error");return}
-  mc.publish(tp(),JSON.stringify({t:"s",mC:1,oC:2}));
-  mC=1;oC=2;gSt=true;
-  el.lobby.style.display="none";el.game.style.display="block";
-  ib();uP();rc2();u();
-});
-
-el.btnLeave.addEventListener("click",function(){
-  if(mc){try{mc.end(true)}catch(e){}mc=null}
-  gSt=false;rL();el.game.style.display="none";el.lobby.style.display="block";ib();
-});
-
-el.btnRestart.addEventListener("click",function(){ib();if(mc&&mc.connected)mc.publish(tp(),JSON.stringify({t:"rs"}))});
-el.btnUndo.addEventListener("click",un);
-el.winOk.addEventListener("click",function(){el.winOverlay.classList.remove("show")});
-el.winOverlay.addEventListener("click",function(e){if(e.target===el.winOverlay)el.winOverlay.classList.remove("show")});
-
-function st(m,c){el.lobbyStatus.textContent=m;el.lobbyStatus.className="status-line "+(c||"")}
-function toast(m,t){el.toast.textContent=m;el.toast.className="show "+(t||"");clearTimeout(el.toast._t);el.toast._t=setTimeout(function(){el.toast.classList.remove("show")},2500)}
-function rL(){el.btnCreate.disabled=false;el.btnJoin.disabled=false;el.btnCreate.style.display="";el.btnShowJoin.style.display="";el.joinArea.style.display="none";el.roomDisplay.style.display="none";el.startArea.style.display="none";st("创建或加入一个房间开始游戏","")}
-
-// ===== 游戏核心 =====
-function clk(e){
-  if(!gSt||gO)return;
-  if(cp!==mC){toast("轮到对方下棋","info");return}
-  var r=canvas.getBoundingClientRect();
-  var x=(e.clientX-r.left)*(CSz/r.width),y=(e.clientY-r.top)*(CSz/r.height);
-  var c=Math.round((x-P)/CS),rw=Math.round((y-P)/CS);
-  if(rw<0||rw>=BS||c<0||c>=BS)return;
-  if(board[rw][c]!==MT)return;
-  mkmv(rw,c);
-}
-
-function tch(e){
-  e.preventDefault();
-  if(!gSt||gO)return;
-  var t=e.touches[0];if(!t)return;
-  var r=canvas.getBoundingClientRect();
-  var x=(t.clientX-r.left)*(CSz/r.width),y=(t.clientY-r.top)*(CSz/r.height);
-  var c=Math.round((x-P)/CS),rw=Math.round((y-P)/CS);
-  if(rw<0||rw>=BS||c<0||c>=BS)return;
-  if(cp!==mC){toast("轮到对方下棋","info");return}
-  if(board[rw][c]!==MT)return;
-  mkmv(rw,c);
-}
-
-function mkmv(r,c){
-  board[r][c]=cp;hs.push({p:cp,r:r,c:c});lm={r:r,c:c};
-  if(!CSz||CSz<1){rc2()}else{db()}
-  if(mc&&mc.connected)mc.publish(tp(),JSON.stringify({t:"mv",r:r,c:c}));
-  if(cw(r,c,cp)){gO=true;wn=cp;if(wn===BK)bS++;else wS++;u();if(!CSz||CSz<1){rc2()}else{db()};sw();return}
-  if(hs.length===BS*BS){gO=true;u();toast("平局！","info");return}
-  if(dM&&cp===mC&&!dP){dP=true;u();return}
-  dP=false;st2();u();if(cp!==mC)el.oppThinking.style.display="inline";
-}
-
-function rm(r,c){
-  if(gO||r<0||r>=BS||c<0||c>=BS||board[r][c]!==MT)return;
-  board[r][c]=cp;hs.push({p:cp,r:r,c:c});lm={r:r,c:c};if(!CSz||CSz<1){rc2()}else{db()};el.oppThinking.style.display="none";
-  if(cw(r,c,cp)){gO=true;wn=cp;if(wn===BK)bS++;else wS++;u();if(!CSz||CSz<1){rc2()}else{db()};sw();return}
-  if(hs.length===BS*BS){gO=true;u();toast("平局！","info");return}
-  st2();u();
-}
-
-function ib(){
-  board=Array.from({length:BS},function(){return Array(BS).fill(MT)});
-  cp=BK;gO=false;wn=null;wc=[];lm=null;hs=[];dP=false;if(gSt)u();db();
-}
-function st2(){cp=cp===BK?WT:BK}
-
-function cw(r,c,p){
-  var ds=[[1,0],[0,1],[1,1],[1,-1]];
-  for(var d=0;d<ds.length;d++){
-    var dr=ds[d][0],dc=ds[d][1],cells=[[r,c]];
-    var rr=r+dr,cc=c+dc;
-    while(rr>=0&&rr<BS&&cc>=0&&cc<BS&&board[rr][cc]===p){cells.push([rr,cc]);rr+=dr;cc+=dc}
-    rr=r-dr;cc=c-dc;
-    while(rr>=0&&rr<BS&&cc>=0&&cc<BS&&board[rr][cc]===p){cells.push([rr,cc]);rr-=dr;cc-=dc}
-    if(cells.length>=5){wc=cells;return true}
-  }
-  return false
-}
-
-function un(){
-  if(hs.length===0)return;
-  var m=hs.pop();board[m.r][m.c]=MT;
-  lm=hs.length>0?{r:hs[hs.length-1].r,c:hs[hs.length-1].c}:null;cp=m.p;
-  if(gO&&wn){if(wn===BK&&bS>0)bS--;if(wn===WT&&wS>0)wS--}
-  dP=false;gO=false;wn=null;wc=[];u();db();
-  if(mc&&mc.connected)mc.publish(tp(),JSON.stringify({t:"un"}));
-}
-
-// ===== AI =====
-var bv=[0,1,10,100,1000,10000];
-
-function ep(r,c,p){
-  var ds=[[1,0],[0,1],[1,1],[1,-1]],t=0;
-  for(var d=0;d<ds.length;d++){
-    var dr=ds[d][0],dc=ds[d][1],cnt=1,op=0;
-    var rr=r+dr,cc=c+dc;
-    while(rr>=0&&rr<BS&&cc>=0&&cc<BS&&board[rr][cc]===p){cnt++;rr+=dr;cc+=dc}
-    if(rr>=0&&rr<BS&&cc>=0&&cc<BS&&board[rr][cc]===MT)op++;
-    rr=r-dr;cc=c-dc;
-    while(rr>=0&&rr<BS&&cc>=0&&cc<BS&&board[rr][cc]===p){cnt++;rr-=dr;cc-=dc}
-    if(rr>=0&&rr<BS&&cc>=0&&cc<BS&&board[rr][cc]===MT)op++;
-    var sc=cnt>=5?1e5:op===0?0:bv[cnt]*(op===2?10:1);
-    t+=sc;
-  }
-  return t
-}
-
-function gAI(){
-  if(gO)return null;
-  var m=new Map();
-  for(var r=0;r<BS;r++)for(var c2=0;c2<BS;c2++)if(board[r][c2]!==MT)for(var dr=-2;dr<=2;dr++)for(var dc=-2;dc<=2;dc++){var nr=r+dr,nc=c2+dc;if(nr>=0&&nr<BS&&nc>=0&&nc<BS&&board[nr][nc]===MT){var k=nr*BS+nc;if(!m.has(k))m.set(k,{r:nr,c:nc})}}
-  if(m.size===0)return{r:Math.floor(BS/2),c:Math.floor(BS/2)}
-  var b=-1/0,bm=null;
-  Array.from(m.values()).forEach(function(cv){
-    var s=ep(cv.r,cv.c,cp)*1+ep(cv.r,cv.c,cp===BK?WT:BK)*1.1+(14-(Math.abs(cv.r-7)+Math.abs(cv.c-7)))*0.5;
-    if(s>b){b=s;bm=cv}
-  });
-  return bm
-}
-
-function aiP(){
-  if(!gSt||gO){toast("游戏未开始","warn");return}
-  if(cp!==mC){toast("轮到对方下棋","warn");return}
-  var m=gAI();if(!m)return;mkmv(m.r,m.c);
-}
-
-// ===== UI =====
-function uP(){
-  if(mC===BK){el.meDot.className="dot black";el.oppDot.className="dot white"}
-  else{el.meDot.className="dot white";el.oppDot.className="dot black"}
-}
-
-function u(){
-  if(gO){el.turnText.textContent=wn===BK?"黑棋获胜！":wn===WT?"白棋获胜！":"平局！";el.oppThinking.style.display="none"}
-  else{el.turnText.textContent=cp===mC?"你的回合":"等待对方下棋...";el.oppThinking.style.display=cp!==mC?"inline":"none"}
-  el.playerMe.classList.toggle("active",gSt&&cp===mC);
-  el.playerOpp.classList.toggle("active",gSt&&cp!==mC&&!gO);
-  el.btnUndo.disabled=hs.length===0;
-}
-
-function sw(){
-  el.winEmoji.textContent=wn===mC?"🎉":"😅";
-  el.winText.textContent=wn===mC?"你赢了！":"对方赢了";
-  el.winOverlay.classList.add("show");
-}
-
-// ===== 画板 =====
-function rc2(){
-  var rect=el.boardWrap.getBoundingClientRect(),size=Math.floor(rect.width);
-  dpr=window.devicePixelRatio||1;
-  canvas.width=size*dpr;canvas.height=size*dpr;
-  canvas.style.width=size+"px";canvas.style.height=size+"px";
-  CSz=size;P=size*0.05;CS=(CSz-2*P)/(BS-1);
-  ctx.scale(dpr,dpr);db();
-}
-
-function db(){
-  var s=CSz;if(!s||s<1){rc2();s=CSz;if(!s||s<1)return}
-  ctx.clearRect(0,0,s,s);
-  ctx.fillStyle="#daa84b";ctx.fillRect(0,0,s,s);
-  ctx.save();ctx.globalAlpha=0.04;
-  for(var i=0;i<40;i++){ctx.beginPath();ctx.moveTo(Math.random()*s,0);ctx.lineTo(Math.random()*s,s);ctx.strokeStyle="#5a3a1a";ctx.lineWidth=Math.random()*2+0.5;ctx.stroke()}
-  ctx.restore();
-  ctx.strokeStyle="#5a3a1a";ctx.lineWidth=0.8;
-  for(var i=0;i<BS;i++){var p=P+i*CS;ctx.beginPath();ctx.moveTo(P,p);ctx.lineTo(P+(BS-1)*CS,p);ctx.stroke();ctx.beginPath();ctx.moveTo(p,P);ctx.lineTo(p,P+(BS-1)*CS);ctx.stroke()}
-  var st=[[3,3],[3,7],[3,11],[7,3],[7,7],[7,11],[11,3],[11,7],[11,11]];
-  for(var i=0;i<st.length;i++){ctx.beginPath();ctx.arc(P+st[i][1]*CS,P+st[i][0]*CS,CS*0.12,0,Math.PI*2);ctx.fillStyle="#5a3a1a";ctx.fill()}
-  if(wc.length>0){ctx.save();for(var i=0;i<wc.length;i++){ctx.beginPath();ctx.arc(P+wc[i][1]*CS,P+wc[i][0]*CS,CS*0.5,0,Math.PI*2);ctx.fillStyle="rgba(255,215,0,0.18)";ctx.fill()}ctx.restore()}
-  for(var r=0;r<BS;r++)for(var c2=0;c2<BS;c2++)if(board[r][c2]!==MT)ds(r,c2,board[r][c2]);
-  if(lm){ctx.beginPath();ctx.arc(P+lm.c*CS,P+lm.r*CS,CS*0.1,0,Math.PI*2);ctx.fillStyle="#ff4444";ctx.fill()}
-  ctx.strokeStyle="#3a2210";ctx.lineWidth=2;ctx.strokeRect(0,0,s,s);
-}
-
-function ds(r,c,p){
-  var x=P+c*CS,y=P+r*CS,rr=CS*0.42;ctx.save();
-  ctx.beginPath();ctx.arc(x+1.5,y+2,rr,0,Math.PI*2);ctx.fillStyle="rgba(0,0,0,0.25)";ctx.fill();
-  if(p===BK){var g=ctx.createRadialGradient(x-rr*0.3,y-rr*0.3,rr*0.1,x,y,rr);g.addColorStop(0,"#666");g.addColorStop(0.6,"#2a2a2a");g.addColorStop(1,"#111");ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}
-  else{var g=ctx.createRadialGradient(x-rr*0.3,y-rr*0.3,rr*0.1,x,y,rr);g.addColorStop(0,"#fff");g.addColorStop(0.7,"#f0f0f0");g.addColorStop(1,"#d0d0d0");ctx.beginPath();ctx.arc(x,y,rr,0,Math.PI*2);ctx.fillStyle=g;ctx.fill()}
-  ctx.restore();
-}
-
-// ===== 上帝模式 =====
-el.gameTitle.addEventListener("click",function(){
-  if(wU)return;tC++;clearTimeout(tmr);
-  if(tC>=5){wU=true;el.godPanel.classList.add("open");toast("👑 上帝模式已激活！","success");u();return}
-  tmr=setTimeout(function(){tC=0},1200);
-  if(5-tC<=2)
-});
-
-document.addEventListener("keydown",function(e){
-  if(e.ctrlKey&&e.key==="g"){e.preventDefault();
-    if(wU){var opn=el.godPanel.classList.toggle("open");toast(opn?"👑 上帝模式已开启":"上帝模式已关闭","success")}
-    else toast("🔑 试试连击标题","info")}
-});
-
-el.godAi.addEventListener("click",aiP);
-el.godDouble.addEventListener("click",function(){dM=!dM;if(!dM)dP=false;u();toast(dM?"双倍落子已开启 🔁":"双倍落子已关闭","success")});
-el.godRemove.addEventListener("click",function(){
-  if(hs.length<2){toast("没有对手的棋子","warn");return}
-  var op=cp,ix=hs.length-1;while(ix>=0&&hs[ix].p!==op)ix--;
-  if(ix<0){toast("找不到对手棋子","warn");return}
-  var tg=hs[ix];board[tg.r][tg.c]=MT;hs.splice(ix,1);
-  lm=hs.length>0?{r:hs[hs.length-1].r,c:hs[hs.length-1].c}:null;
-  if(gO){gO=false;wn=null;wc=[]}dP=false;
-  toast("已移除对手棋子 👑","success");u();db()
-});
-el.godSwap.addEventListener("click",function(){
-  for(var r=0;r<BS;r++)for(var cc=0;cc<BS;cc++){if(board[r][cc]===BK)board[r][cc]=WT;else if(board[r][cc]===WT)board[r][cc]=BK}
-  cp=cp===BK?WT:BK;wc=[];dP=false;mC=mC===BK?WT:BK;oC=oC===BK?WT:BK;
-  if(gO){var t=bS;bS=wS;wS=t;wn=wn===BK?WT:BK}
-  uP();u();db();toast("颜色已交换 🔄","info")
-});
-
-// ===== 事件绑定 =====
-canvas.addEventListener("click",clk);
-canvas.addEventListener("touchstart",tch,{passive:false});
-var rt2;window.addEventListener("resize",function(){clearTimeout(rt2);rt2=setTimeout(function(){if(CSz)rc2()},150)});
-
-ib();
-</script>
+<script src="client.js"></script>
 </body>
 </html>
