@@ -180,6 +180,10 @@ el.bananaBtn.addEventListener("click",()=>{if(!gameStarted)return;sendMsg({t:"ba
 el.cakeBtn.addEventListener("click",()=>{if(!gameStarted)return;sendMsg({t:"cake",id:myId});showCakeSplat();toast("🎂 奶油蛋糕攻击！");});
 
 // ===== Game Init =====
+function isTouchDevice(){ return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0); }
+function showTouchControls(){ if(isTouchDevice()){ var tc=document.getElementById('touchControls'); if(tc) tc.style.display='block'; } }
+if(isTouchDevice()){ setTimeout(function(){ var tc=document.getElementById('touchControls'); if(tc) tc.style.display='block'; }, 500); }
+
 function initGame(){
   gameStarted=true;gameOver=false;
   el.lobby.style.display="none";el.game.style.display="block";el.connBadge.textContent="🟢 已连接";
@@ -191,7 +195,7 @@ function initGame(){
   el.p2a.textContent=CHARS[isHost?oppChar:selChar].emoji;el.p2n.textContent=isHost?"对手":"我";
   updateHP();
   // Show touch controls on mobile
-  if(window.matchMedia("(pointer:coarse)").matches) el.touchControls.style.display="block";
+  showTouchControls();
   gameLoop();
 }
 function updateHP(){
