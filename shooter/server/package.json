@@ -1,0 +1,8 @@
+﻿{
+  "name": "shooter-server",
+  "version": "1.0.0",
+  "description": "横版射击游戏 WebSocket 服务器",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" }
+}
