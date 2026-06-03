@@ -1,0 +1,89 @@
+﻿:root{--bgP:#1a1a2e;--bgS:#16213e;--text:#f0e6d3;--textD:#a09070;--gold:#e8b830}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation}
+body{font-family:"Segoe UI","PingFang SC",sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:0;color:var(--text);-webkit-user-select:none;user-select:none;overflow:hidden}
+#safe{width:100%;max-width:680px;height:100vh;max-height:860px;display:flex;flex-direction:column;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);border-radius:16px;margin:8px;box-shadow:0 8px 40px rgba(0,0,0,0.3);overflow:hidden}
+#lobby{padding:16px;text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center}
+#lobby h1{font-size:24px;color:var(--gold)}
+.sub{font-size:12px;color:var(--textD);margin-bottom:12px}
+.lb{font-size:11px;color:var(--textD);margin-bottom:4px}
+.opts{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.card{padding:6px 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.03);color:var(--text);min-width:44px}
+.card:hover{transform:translateY(-2px);background:rgba(255,255,255,0.08)}
+.card.sel{border-color:var(--gold);background:rgba(232,184,48,0.1)}
+.card span{font-size:18px;display:block}.card .nm{font-size:8px}
+.btns{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.btns button{padding:10px 22px;border:none;border-radius:12px;font-size:13px;cursor:pointer;font-weight:600;transition:all 0.2s}
+.pri{background:linear-gradient(135deg,var(--gold),#c49a20);color:#1a1a2e;box-shadow:0 4px 16px rgba(232,184,48,0.2)}
+.pri:hover{transform:translateY(-2px)}
+.sec{background:rgba(255,255,255,0.06);color:var(--text);border:1px solid rgba(255,255,255,0.08)}
+.jr{display:flex;gap:8px;justify-content:center;margin:6px 0}
+.jr input{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.2);color:var(--text);font-size:18px;width:100px;text-align:center;letter-spacing:6px;outline:none;font-family:monospace}
+.jr input:focus{border-color:var(--gold)}
+.rcb{display:inline-block;padding:10px 24px;margin:6px 0;background:rgba(255,255,255,0.03);border-radius:12px;border:2px dashed rgba(232,184,48,0.3)}
+.rc{font-size:32px;font-weight:700;color:var(--gold);letter-spacing:8px;user-select:all}
+.st{font-size:11px;color:var(--textD);margin:6px 0;min-height:16px}
+.st.succ{color:#48e878}.st.err{color:#e84848}
+/* Game header */
+.gh{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;background:rgba(0,0,0,0.12)}
+.gh h1{font-size:13px;cursor:default;color:var(--gold)}
+#cb{font-size:9px;padding:1px 6px;border-radius:10px;background:rgba(76,175,80,0.15);color:#6bc47f}
+.hud{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;gap:4px;background:rgba(0,0,0,0.05)}
+.av{font-size:18px;transition:all 0.3s}
+.av.shake{animation:avShake 0.5s}
+@keyframes avShake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.skBtn{padding:2px 5px;border:none;border-radius:6px;cursor:pointer;font-size:14px;background:rgba(255,255,255,0.05);transition:all 0.2s}
+.skBtn:hover{background:rgba(255,255,255,0.1)}
+.turnInfo{text-align:center;font-size:11px;color:var(--textD);padding:3px}
+/* Board */
+#boardArea{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:200px}
+#gc{width:100%;height:100%;aspect-ratio:1/1;max-width:520px;max-height:520px;border-radius:6px;touch-action:none}
+/* Stone baskets */
+#baskets{display:flex;justify-content:center;gap:30px;padding:4px 10px 6px}
+.basket{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:grab;padding:4px 16px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);transition:all 0.2s;user-select:none}
+.basket:active{cursor:grabbing}
+.basket.activeBasket{border-color:var(--gold);background:rgba(232,184,48,0.08)}
+.basket span{font-size:9px;color:var(--textD)}
+.bs{width:28px;height:28px;border-radius:50%;transition:all 0.2s}
+.basket:active .bs{transform:scale(0.9)}
+.bs-black{background:radial-gradient(circle at 35% 35%,#555,#111);border:1px solid #444;box-shadow:0 2px 6px rgba(0,0,0,0.3)}
+.bs-white{background:radial-gradient(circle at 35% 35%,#fff,#e0e0e0);border:1px solid #ccc;box-shadow:0 2px 6px rgba(0,0,0,0.15)}
+/* Ghost stone follow cursor */
+#ghostStone{z-index:100;width:28px;height:28px;border-radius:50%;transform:translate(-50%,-50%)}
+/* Deception overlay */
+#deceptionOverlay{position:fixed;inset:0;z-index:90;display:none;align-items:center;justify-content:center;pointer-events:none}
+#deceptionOverlay.show{display:flex}
+.decText{background:rgba(0,0,0,0.7);backdrop-filter:blur(10px);padding:14px 28px;border-radius:14px;font-size:16px;color:#f0e6d3;border:1px solid rgba(255,255,255,0.1);text-align:center;animation:decPop 0.3s ease-out;max-width:300px;line-height:1.5}
+@keyframes decPop{0%{transform:scale(0.5);opacity:0}100%{transform:scale(1);opacity:1}}
+/* Rat animation */
+#ratOverlay{position:fixed;inset:0;z-index:80;display:none;pointer-events:none}
+#ratOverlay.show{display:block}
+.ratAnim{position:absolute;top:-50px;left:50%;transform:translateX(-50%);font-size:40px;animation:ratDrop 1.2s ease-in forwards}
+@keyframes ratDrop{0%{top:-50px;transform:translateX(-50%) rotate(0deg)}30%{top:40%;transform:translateX(-50%) rotate(5deg)}60%{top:45%;transform:translateX(-50%) rotate(-3deg)}100%{top:-50px;transform:translateX(-50%) rotate(0deg)}}
+/* Deception wind */
+.windEffect{position:fixed;inset:0;z-index:85;pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(200,200,200,0.08) 20%,rgba(200,200,200,0.12) 50%,rgba(200,200,200,0.08) 80%,transparent 100%);animation:windBlow 0.8s ease-out forwards}
+@keyframes windBlow{0%{transform:translateX(-100%);opacity:0}20%{opacity:1}80%{opacity:1}100%{transform:translateX(100%);opacity:0}}
+/* God */
+#godPanel{display:none;padding:3px 8px 4px;background:rgba(255,215,0,0.04);border-top:1px solid rgba(255,215,0,0.08)}
+#godPanel.show{display:block}
+.gHd{font-size:10px;font-weight:700;color:#c49a20;text-align:center;margin-bottom:2px}
+.gBtns{display:flex;gap:3px;justify-content:center;flex-wrap:wrap}
+.gBtns button{padding:3px 7px;border:none;border-radius:6px;font-size:9px;cursor:pointer;transition:all 0.2s;background:rgba(255,215,0,0.08);color:#c49a20;border:1px solid rgba(255,215,0,0.1)}
+.gBtns button.on{background:rgba(255,215,0,0.2)}
+#gi{font-size:8px;color:#c49a20;padding:1px 5px;display:inline-block}
+#ctrl{display:flex;gap:6px;justify-content:center;padding:2px 4px}
+#ctrl button{padding:4px 10px;border:none;border-radius:6px;font-size:9px;cursor:pointer;background:rgba(255,255,255,0.06);color:var(--text);transition:all 0.2s}
+#ctrl button:disabled{opacity:0.3;cursor:default}
+/* Win */
+#wo{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity 0.4s}
+#wo.show{opacity:1;pointer-events:auto}
+.wc{background:rgba(255,255,255,0.04);backdrop-filter:blur(16px);border-radius:20px;padding:20px 28px;text-align:center;border:1px solid rgba(255,255,255,0.06);transform:scale(0.85);transition:transform 0.4s}
+#wo.show .wc{transform:scale(1)}
+.we{font-size:32px;display:block}
+.wt{font-size:17px;font-weight:700;margin:4px 0 10px}
+.wc button{padding:7px 18px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--gold),#c49a20);color:#1a1a2e;font-size:12px;font-weight:600;cursor:pointer}
+#toast{position:fixed;top:12px;left:50%;transform:translateX(-50%) translateY(-60px);z-index:200;padding:5px 14px;border-radius:8px;font-size:11px;background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);color:var(--text);border:1px solid rgba(255,255,255,0.06);opacity:0;transition:all 0.35s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{font-size:8px;color:#504040;text-align:center;padding:2px}
+@keyframes prFade{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.3)translateY(-20px)}}
+<hr style="border:none;border-top:1px solid var(--gold)">
+.pr{position:fixed;pointer-events:none;z-index:60;border-radius:50%;animation:prFade 0.5s ease-out forwards}
