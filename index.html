@@ -266,9 +266,10 @@ function tch(e){
 }
 
 function mkmv(r,c){
-  board[r][c]=cp;hs.push({p:cp,r:r,c:c});lm={r:r,c:c};db();
+  board[r][c]=cp;hs.push({p:cp,r:r,c:c});lm={r:r,c:c};
+  if(!CSz||CSz<1){rc2()}else{db()}
   if(mc&&mc.connected)mc.publish(tp(),JSON.stringify({t:"mv",r:r,c:c}));
-  if(cw(r,c,cp)){gO=true;wn=cp;if(wn===BK)bS++;else wS++;u();db();sw();return}
+  if(cw(r,c,cp)){gO=true;wn=cp;if(wn===BK)bS++;else wS++;u();if(!CSz||CSz<1){rc2()}else{db()};sw();return}
   if(hs.length===BS*BS){gO=true;u();toast("平局！","info");return}
   if(dM&&cp===mC&&!dP){dP=true;u();return}
   dP=false;st2();u();if(cp!==mC)el.oppThinking.style.display="inline";
@@ -276,8 +277,8 @@ function mkmv(r,c){
 
 function rm(r,c){
   if(gO||r<0||r>=BS||c<0||c>=BS||board[r][c]!==MT)return;
-  board[r][c]=cp;hs.push({p:cp,r:r,c:c});lm={r:r,c:c};db();el.oppThinking.style.display="none";
-  if(cw(r,c,cp)){gO=true;wn=cp;if(wn===BK)bS++;else wS++;u();db();sw();return}
+  board[r][c]=cp;hs.push({p:cp,r:r,c:c});lm={r:r,c:c};if(!CSz||CSz<1){rc2()}else{db()};el.oppThinking.style.display="none";
+  if(cw(r,c,cp)){gO=true;wn=cp;if(wn===BK)bS++;else wS++;u();if(!CSz||CSz<1){rc2()}else{db()};sw();return}
   if(hs.length===BS*BS){gO=true;u();toast("平局！","info");return}
   st2();u();
 }
@@ -379,7 +380,7 @@ function rc2(){
 }
 
 function db(){
-  var s=CSz;if(!s)return;
+  var s=CSz;if(!s||s<1){rc2();s=CSz;if(!s||s<1)return}
   ctx.clearRect(0,0,s,s);
   ctx.fillStyle="#daa84b";ctx.fillRect(0,0,s,s);
   ctx.save();ctx.globalAlpha=0.04;
