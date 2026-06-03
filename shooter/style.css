@@ -44,9 +44,7 @@ body{font-family:"Segoe UI","PingFang SC",sans-serif;background:linear-gradient(
 #gameCanvas{display:block;width:100%;aspect-ratio:800/450;border-radius:10px;cursor:crosshair;background:#d0e8ff;touch-action:none}
 .controls-hint-pc{font-size:10px;color:#c0b0b0;margin:3px 0}
 /* ===== Touch Controls (mobile only) ===== */
-#touchControls{position:absolute;inset:0;z-index:10;pointer-events:none}
-@media(pointer:coarse){#touchControls{display:block}.controls-hint-pc{display:none}}
-@media(pointer:fine){#touchControls{display:none}}
+#touchControls{position:absolute;inset:0;z-index:10;pointer-events:none;display:none}
 /* Joystick */
 #joystickZone{position:absolute;left:10px;bottom:10px;width:130px;height:130px;pointer-events:auto;touch-action:none}
 #joystickBase{position:absolute;left:5px;bottom:5px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.35);border:3px solid rgba(255,183,197,0.5);backdrop-filter:blur(4px)}
