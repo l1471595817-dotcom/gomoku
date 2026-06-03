@@ -1,7 +1,5 @@
 ﻿// ===== 配置 =====
-const PEER_HOST = "0.peerjs.com";
-const PEER_PORT = 443;
-const PEER_PATH = "/";
+const MQTT_BROKER = "wss://broker-cn.emqx.io:8084/mqtt";
 
 // ===== 常量 =====
 const BS = 15, MT = 0, BK = 1, WH = 2;
@@ -25,7 +23,7 @@ const canvas = el.board;
 const ctx = canvas.getContext("2d");
 
 // ===== State =====
-let peer = null, conn = null;
+let mc = null; // MQTT client
 let myId = 0, myColor = BK, myChar = 0, oppChar = 1;
 let roomCode = "", isHost = false, gameStarted = false, gameOver = false;
 let board = Array.from({length:BS},()=>Array(BS).fill(MT));
@@ -33,6 +31,10 @@ let cp = BK, winner = null, winningCells = [], lastMove = null, history = [];
 let P = 0, CS = 0, CSz = 0, dpr = 1;
 let godActive = false, doubleMove = false, dmPending = false;
 let titleClicks = 0, titleTimer = null;
+
+// ===== MQTT Topic Helpers =====
+function myT(){ return "gm/"+roomCode+"/"+(isHost?"h":"j"); }
+function opT(){ return "gm/"+roomCode+"/"+(isHost?"j":"h"); }
 
 // ===== Character Select =====
 let selChar = 0;
@@ -64,122 +66,82 @@ function setStatus(msg, cls) {
 }
 
 function createRoom() {
-  setStatus("正在创建房间...","waiting");
+  setStatus("正在生成房间...","waiting");
   el.btnCreate.disabled = true;
   roomCode = Math.floor(1000 + Math.random() * 9000).toString();
-  isHost = true;
-  myId = 1;
-  
-  if (peer) { peer.destroy(); peer = null; }
-  try {
-    peer = new Peer(roomCode, { host: PEER_HOST, port: PEER_PORT, path: PEER_PATH });
-  } catch(e) {
-    setStatus("创建失败","error"); el.btnCreate.disabled = false; return;
-  }
-  
-  peer.on("open", id => {
-    el.roomCodeText.textContent = id;
-    el.roomDisplay.style.display = "block";
-    setStatus("等待对方加入...","waiting");
-    el.btnCreate.style.display = "none";
-    el.btnShowJoin.style.display = "none";
-  });
-  
-  peer.on("connection", c => { conn = c; setupConn(); });
-  
-  peer.on("error", err => {
-    if (err.type === "unavailable-id") setStatus("房间号被占用，重新创建","error");
-    else setStatus("创建失败","error");
-    toast("创建房间失败","error");
-    resetLobby();
-  });
+  isHost = true; myId = 1; myColor = BK;
+  connectMQTT();
 }
 
 function joinRoom() {
   const code = el.roomInput.value.trim();
-  if (!code || code.length !== 4 || isNaN(code)) { toast("输入4位房间号"); return; }
-  setStatus("正在连接...","waiting");
-  roomCode = code;
-  isHost = false;
-  myId = 2;
+  if (!code || code.length !== 4 || isNaN(code)) { toast("请输入4位房间号"); return; }
+  setStatus("正在连接房间...","waiting");
+  roomCode = code; isHost = false; myId = 2; myColor = WH;
   el.btnJoin.disabled = true;
-  
-  if (peer) { peer.destroy(); peer = null; }
-  try {
-    peer = new Peer({ host: PEER_HOST, port: PEER_PORT, path: PEER_PATH });
-  } catch(e) {
-    setStatus("连接失败","error"); el.btnJoin.disabled = false; return;
-  }
-  
-  peer.on("open", () => {
-    const c = peer.connect(roomCode, { reliable: true });
-    conn = c;
-    setupConn();
-  });
-  
-  peer.on("error", err => {
-    if (err.type === "peer-unavailable") setStatus("房间不存在，检查房间号","error");
-    else setStatus("连接失败","error");
-    toast("加入失败","error");
-    resetLobby();
-  });
+  connectMQTT();
 }
 
-function setupConn() {
-  conn.on("open", () => {
+function connectMQTT() {
+  if (mc) { try { mc.end(true); } catch(e) {} mc = null; }
+  const cid = "gm_"+Math.random().toString(36).substring(2,10);
+  mc = mqtt.connect(MQTT_BROKER, { clientId: cid, clean: true });
+
+  mc.on("connect", () => {
+    mc.subscribe(opT());
     if (isHost) {
-      setStatus("✅ 对手已连接！","success");
-      el.startArea.style.display = "block";
-      // Send host info
-      conn.send({ t: "info", char: selChar, id: 1 });
-    } else {
-      setStatus("✅ 已连接！等待房主开始","success");
-      conn.send({ t: "info", char: selChar, id: 2 });
-    }
+      el.roomCodeText.textContent = roomCode;
+      el.roomDisplay.style.display = "block";
+      setStatus("等待对方加入...","waiting");
+      el.btnCreate.style.display = "none";
+      el.btnShowJoin.style.display = "none";
+    } else { setStatus("已连接！等待房主开始","success"); }
+    mc.publish(myT(), JSON.stringify({ t: "hello", char: selChar, id: myId }));
   });
-  
-  conn.on("data", data => {
-    try { handleMsg(data); } catch(e) {}
-  });
-  
-  conn.on("close", () => {
-    if (gameStarted) toast("对方已断开 😢","error");
-    else { setStatus("连接已断开","error"); resetLobby(); }
-  });
-}
 
-function handleMsg(d) {
-  if (d.t === "info") {
-    oppChar = d.char;
-    return;
-  }
-  if (d.t === "start") {
-    myColor = isHost ? BK : WH;
-    oppChar = d.oppChar;
-    initGame();
-    return;
-  }
-  if (d.t === "mv") {
-    const oppColor = isHost ? WH : BK;
-    if (board[d.r][d.c] === MT) {
-      board[d.r][d.c] = oppColor;
-      history.push({ p: oppColor, r: d.r, c: d.c });
-      lastMove = { r: d.r, c: d.c };
-      cp = cp === BK ? WH : BK;
-      db();
-      u();
-      checkWinLocal(d.r, d.c, oppColor);
+  mc.on("message", (t, m) => {
+    let d; try { d = JSON.parse(m.toString()); } catch(e) { return; }
+    if (d.t === "hello") {
+      oppChar = d.char;
+      if (isHost) {
+        setStatus("✅ 对手已连接！","success");
+        el.startArea.style.display = "block";
+      }
     }
-    return;
-  }
-  if (d.t === "undo") { undo(); return; }
-  if (d.t === "rst") { resetBoard(); toast("对方请求重新开始","info"); return; }
-  if (d.t === "egg") { showEggAnimation(d.fid); return; }
-  if (d.t === "taunt") { showTaunt(d.fid, d.msg); return; }
+    if (d.t === "start") {
+      initGame();
+    }
+    if (d.t === "mv") {
+      const oppColor = isHost ? WH : BK;
+      if (board[d.r][d.c] === MT) {
+        board[d.r][d.c] = oppColor;
+        history.push({ p: oppColor, r: d.r, c: d.c });
+        lastMove = { r: d.r, c: d.c };
+        cp = cp === BK ? WH : BK;
+        forceRedraw();
+        u();
+        checkWinLocal(d.r, d.c, oppColor);
+      }
+    }
+    if (d.t === "undo") { undoRemote(); }
+    if (d.t === "rst") { resetBoard(); toast("对方请求重新开始","info"); }
+    if (d.t === "egg") { showEggAnimation(d.fid); }
+    if (d.t === "taunt") { showTaunt(d.fid, d.msg); }
+  });
+
+  mc.on("error", () => {
+    if (isHost) { setStatus("创建失败","error"); toast("连接失败","error"); el.btnCreate.disabled = false; }
+    else { setStatus("连接失败","error"); toast("连接失败","error"); el.btnJoin.disabled = false; }
+  });
+
+  mc.on("offline", () => {
+    if (gameStarted) { toast("连接断开","error"); }
+    else { setStatus("连接断开","error"); resetLobby(); }
+  });
 }
 
 function sendMsg(data) {
-  if (conn && conn.open) conn.send(data);
+  if (mc && mc.connected) mc.publish(myT(), JSON.stringify(data));
 }
 
 function resetLobby() {
@@ -194,7 +156,7 @@ function resetLobby() {
 }
 
 el.btnStart.addEventListener("click", () => {
-  if (!conn || !conn.open) { toast("对方不在线","error"); return; }
+  if (!mc || !mc.connected) { toast("连接已断开","error"); return; }
   sendMsg({ t: "start", oppChar: selChar });
   initGame();
 });
@@ -217,7 +179,7 @@ function initGame() {
   el.p2Dot.className = "pdot white";
 
   resetBoard();
-  setTimeout(resizeCanvas, 50);
+  setTimeout(forceRedraw, 50);
 }
 
 function resetBoard() {
@@ -225,14 +187,14 @@ function resetBoard() {
   cp = BK; gameOver = false; winner = null; winningCells = [];
   lastMove = null; history = []; dmPending = false;
   if (gameStarted) u();
-  db();
+  forceRedraw();
 }
 
-// ===== Canvas =====
-function resizeCanvas() {
+// ===== Canvas (FIXED: always valid) =====
+function initCanvas() {
   const rect = el.boardWrap.getBoundingClientRect();
   let size = Math.floor(rect.width);
-  if (size < 10) size = 300;
+  if (size < 10) { setTimeout(initCanvas, 50); return; }
   dpr = window.devicePixelRatio || 1;
   canvas.width = size * dpr;
   canvas.height = size * dpr;
@@ -245,9 +207,14 @@ function resizeCanvas() {
   db();
 }
 
+function forceRedraw() {
+  if (!CSz || CSz < 10) { initCanvas(); return; }
+  db();
+}
+
 function db() {
-  let s = CSz;
-  if (!s || s < 10) { setTimeout(resizeCanvas, 100); return; }
+  if (!CSz || CSz < 10) { initCanvas(); return; }
+  const s = CSz;
   ctx.clearRect(0, 0, s, s);
   ctx.fillStyle = "#deb55c";
   ctx.fillRect(0, 0, s, s);
@@ -352,8 +319,7 @@ function placeMove(r, c) {
   board[r][c] = cp;
   history.push({ p: cp, r, c });
   lastMove = { r, c };
-  if (!CSz || CSz < 10) { resizeCanvas(); }
-  else { db(); }
+  forceRedraw();
   sendMsg({ t: "mv", r, c });
 
   if (checkWinLocal(r, c, cp)) return;
@@ -365,7 +331,7 @@ function placeMove(r, c) {
   u();
 }
 
-function undo() {
+function undoRemote() {
   if (history.length === 0) return;
   const m = history.pop();
   board[m.r][m.c] = MT;
@@ -373,8 +339,7 @@ function undo() {
   cp = m.p;
   if (dmPending) dmPending = false;
   gameOver = false; winner = null; winningCells = [];
-  u(); db();
-  sendMsg({ t: "undo" });
+  u(); forceRedraw();
 }
 
 function checkWinLocal(r, c, player) {
@@ -388,7 +353,7 @@ function checkWinLocal(r, c, player) {
     if (cells.length >= 5) {
       winningCells = cells;
       gameOver = true; winner = player;
-      u(); db();
+      u(); forceRedraw();
       el.winEmoji.textContent = winner === myColor ? "🎉" : "😅";
       el.winText.textContent = winner === myColor ? "你赢了！" : "对方赢了";
       el.winOverlay.classList.add("show");
@@ -415,9 +380,7 @@ el.winOk.addEventListener("click", ()=>el.winOverlay.classList.remove("show"));
 el.winOverlay.addEventListener("click", e=>{ if(e.target===el.winOverlay) el.winOverlay.classList.remove("show"); });
 el.restartBtn.addEventListener("click", function() { resetBoard(); sendMsg({ t: "rst" }); });
 el.leaveBtn.addEventListener("click", function() {
-  if (conn) conn.close();
-  if (peer) peer.destroy();
-  peer = null; conn = null;
+  if (mc) { try { mc.end(true); } catch(e) {} mc = null; }
   gameStarted = false;
   el.game.style.display = "none";
   el.lobby.style.display = "block";
@@ -427,7 +390,7 @@ el.leaveBtn.addEventListener("click", function() {
 let rt;
 window.addEventListener("resize", ()=>{
   clearTimeout(rt);
-  rt = setTimeout(()=>{ if (gameStarted) resizeCanvas(); }, 150);
+  rt = setTimeout(()=>{ if (gameStarted) forceRedraw(); }, 150);
 });
 
 // ===== Egg & Taunt =====
@@ -591,4 +554,4 @@ function patternScore(cnt, open) {
 
 // ===== Init =====
 resetBoard();
-setTimeout(resizeCanvas, 200);
+setTimeout(initCanvas, 200);
