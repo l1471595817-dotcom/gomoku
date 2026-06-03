@@ -1,0 +1,81 @@
+﻿*{margin:0;padding:0;box-sizing:border-box;touch-action:manipulation}
+:root{--pink:#ffb7c5;--blue:#b5d8f7;--pur:#d4b8f0;--text:#5a4a4a}
+body{font-family:"Segoe UI","PingFang SC",sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e);min-height:100vh;display:flex;justify-content:center;align-items:center;padding:0;color:var(--text);-webkit-user-select:none;user-select:none;overflow:hidden}
+#safeArea{width:100%;max-width:900px;height:100vh;max-height:700px;display:flex;flex-direction:column;background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border-radius:20px;margin:8px;box-shadow:0 8px 40px rgba(0,0,0,0.3);overflow:hidden}
+#lobby{padding:16px;text-align:center;flex:1;display:flex;flex-direction:column;justify-content:center}
+#lobby h1{font-size:26px;color:#ffb7c5;text-shadow:0 0 20px rgba(255,183,197,0.3);margin-bottom:2px}
+.sub{font-size:12px;color:#a09090;margin-bottom:12px}
+.selRow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:10px}
+.selCol .lb{font-size:11px;color:#a09090;margin-bottom:4px}
+.opts{display:flex;gap:6px;justify-content:center}
+.card{padding:8px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.05);color:#f0e6d3;min-width:50px}
+.card:hover{transform:translateY(-2px);background:rgba(255,255,255,0.1)}
+.card.sel{border-color:#ffb7c5;background:rgba(255,183,197,0.15);box-shadow:0 0 15px rgba(255,183,197,0.2)}
+.card .emoji{font-size:24px;display:block;margin-bottom:2px}
+.card .nm{font-size:9px}
+.btns{display:flex;gap:10px;justify-content:center;margin:8px 0}
+.btns button{padding:10px 24px;border:none;border-radius:14px;font-size:14px;cursor:pointer;transition:all 0.2s;font-weight:600}
+.pri{background:linear-gradient(135deg,#ffb7c5,#f08a9e);color:#fff;box-shadow:0 4px 16px rgba(240,138,158,0.3)}
+.pri:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(240,138,158,0.4)}
+.sec{background:rgba(255,255,255,0.08);color:#f0e6d3;border:1px solid rgba(255,255,255,0.1)}
+.sec:hover{background:rgba(255,255,255,0.12)}
+.jr{display:flex;gap:8px;justify-content:center;margin:6px 0}
+.jr input{padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(0,0,0,0.2);color:#f0e6d3;font-size:18px;width:100px;text-align:center;letter-spacing:6px;outline:none}
+.jr input:focus{border-color:#ffb7c5}
+.rcb{display:inline-block;padding:12px 28px;margin:6px 0;background:rgba(255,255,255,0.05);border-radius:14px;border:2px dashed rgba(255,183,197,0.5)}
+.rc{font-size:34px;font-weight:700;color:#ffb7c5;letter-spacing:8px;user-select:all}
+.st{font-size:12px;color:#a09090;margin:6px 0;min-height:18px}
+.st.succ{color:#6bc47f}.st.err{color:#e87878}
+/* Game */
+.gh{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:rgba(0,0,0,0.15)}
+.gh h1{font-size:13px;cursor:default;color:#ffb7c5;text-shadow:0 0 10px rgba(255,183,197,0.2)}
+#cb{font-size:9px;padding:2px 8px;border-radius:12px;background:rgba(76,175,80,0.2);color:#6bc47f}
+.hud{display:flex;align-items:center;justify-content:space-between;padding:4px 10px;background:rgba(0,0,0,0.08)}
+.pc{display:flex;align-items:center;gap:4px;font-size:10px;color:#f0e6d3}
+.pc .av{font-size:14px}
+.pc .pn{font-weight:600;font-size:9px;color:#d0c0b0}
+.hp-r{width:45px;height:6px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden}
+.hp-f{height:100%;background:linear-gradient(90deg,#6bc47f,#4caf50);border-radius:4px;transition:width 0.2s}
+.it{font-size:9px;color:#c0b0a0;min-width:40px;text-align:right}
+/* Safe zone layout */
+.gameZone{flex:1;display:flex;position:relative;overflow:hidden}
+#leftZone{width:22%;min-width:80px;position:relative}
+#centerZone{flex:1;display:flex;align-items:center;justify-content:center;position:relative}
+#rightZone{width:22%;min-width:80px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:8px}
+#gc{width:100%;height:100%;aspect-ratio:520/440;border-radius:6px;background:#d0e8ff;touch-action:none;max-width:100%;max-height:100%}
+/* Dynamic joystick */
+#joyStick{position:absolute;pointer-events:none;z-index:5}
+#joyBase{width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:2px solid rgba(255,183,197,0.3);display:flex;align-items:center;justify-content:center;position:absolute;left:-45px;top:-45px;box-shadow:0 0 30px rgba(255,183,197,0.1)}
+#joyDot{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,rgba(255,255,255,0.9),rgba(255,200,210,0.6));box-shadow:0 0 20px rgba(255,183,197,0.3);transition:none}
+/* Action buttons (glassmorphic) */
+.actBtn{width:54px;height:54px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;touch-action:none;-webkit-tap-highlight-color:transparent;transition:all 0.1s;backdrop-filter:blur(8px);box-shadow:0 4px 16px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.2)}
+.actBtn:active{transform:scale(0.88);box-shadow:0 2px 8px rgba(0,0,0,0.3)}
+.actBtn.big{width:62px;height:62px;font-size:28px}
+.actBtn.sm{width:46px;height:46px;font-size:18px}
+#btnBomb{background:linear-gradient(135deg,rgba(255,138,158,0.8),rgba(240,104,128,0.8));color:#fff;border:1px solid rgba(255,255,255,0.2)}
+#btnBanana{background:linear-gradient(135deg,rgba(252,230,162,0.8),rgba(240,192,112,0.8));color:#8a7a5a;border:1px solid rgba(255,255,255,0.15)}
+#btnChili{background:linear-gradient(135deg,rgba(255,96,96,0.8),rgba(208,64,64,0.8));color:#fff;border:1px solid rgba(255,255,255,0.2)}
+/* God */
+#godPanel{display:none;padding:6px 10px;background:rgba(255,215,0,0.06);border-top:1px solid rgba(255,215,0,0.1)}
+#godPanel.show{display:block}
+.ghd{font-size:11px;font-weight:700;color:#c49a20;margin-bottom:4px;text-align:center}
+.gbtns{display:flex;gap:4px;justify-content:center}
+.gbtns button{padding:3px 8px;border:none;border-radius:6px;font-size:9px;cursor:pointer;transition:all 0.2s;background:rgba(255,215,0,0.1);color:#b89420;border:1px solid rgba(255,215,0,0.2)}
+.gbtns button.on{background:rgba(255,215,0,0.25);box-shadow:0 0 10px rgba(255,215,0,0.2)}
+#gi{font-size:8px;color:#c49a20;padding:2px 6px;display:inline-block}
+#statext{font-size:9px;color:#a09090;text-align:center;padding:2px}
+/* Chili */
+#chiliOverlay{position:fixed;inset:0;z-index:999;pointer-events:none;opacity:0;transition:opacity 0.5s}
+#chiliOverlay.show{opacity:1}
+.fog{width:100%;height:100%;background:radial-gradient(ellipse at 50% 50%,transparent 8%,rgba(80,10,10,0.92) 30%,rgba(30,5,5,0.98) 60%,#000 100%)}
+/* Win */
+#wo{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);opacity:0;pointer-events:none;transition:opacity 0.4s}
+#wo.show{opacity:1;pointer-events:auto}
+.wc{background:rgba(255,255,255,0.06);backdrop-filter:blur(16px);border-radius:20px;padding:24px 32px;text-align:center;border:1px solid rgba(255,255,255,0.1);transform:scale(0.85);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+#wo.show .wc{transform:scale(1)}
+.we{font-size:36px;display:block;margin-bottom:4px}
+.wt{font-size:18px;font-weight:700;color:#f0e6d3;margin-bottom:10px}
+.wc button{padding:8px 22px;border:none;border-radius:12px;background:linear-gradient(135deg,#ffb7c5,#f08a9e);color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+#toast{position:fixed;top:12px;left:50%;transform:translateX(-50%) translateY(-60px);z-index:200;padding:6px 16px;border-radius:10px;font-size:11px;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);color:#f0e6d3;border:1px solid rgba(255,255,255,0.1);opacity:0;transition:all 0.35s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{font-size:9px;color:#605050;text-align:center;padding:4px}
