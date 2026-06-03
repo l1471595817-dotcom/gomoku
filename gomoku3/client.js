@@ -1,4 +1,4 @@
-﻿const MQTT_BROKER="wss://broker-cn.emqx.io:8084/mqtt";
+const MQTT_BROKER="wss://broker-cn.emqx.io:8084/mqtt";
 const BS=15,MT=0,BK=1,WH=2;
 const THEMES=[
   {n:"竹林雅韵",bg:["#0a1a0a","#1a2a1a"],bd:"#c8e0a0",gl:"#4a6a3a",bkS:"#2a4a2a",whS:"#f0f8e0",sg:["#4a8a3a","#3a7a2a"]},
@@ -11,10 +11,11 @@ const $=id=>document.getElementById(id);
 const el={};
 ["lobby","game","ls","rd","rct","sa","btnGo","ja","gt","cb","toast","gi",
  "btnC","btnSJ","btnJ","ri","gc","wo","we","wt","wok","godPanel",
- "btnUndo","btnRestart","btnLeave","ghostStone",
+ "btnUndo","btnRestart","btnLeave","ghostStone","turnInfo",
  "bkBlack","bkWhite","btnEgg","btnFlower",
- "gAI","gTime","gRat","p1a","p2a","p1n","p2n","turnInfo",
- "deceptionOverlay","decText","ratOverlay","ratAnim"].forEach(id=>{el[id]=$(id);});
+ "gAI","gTime","gRat","p1a","p2a","p1n","p2n",
+ "deceptionOverlay","decText","ratOverlay","ratAnim",
+ "boardWrapper"].forEach(id=>{el[id]=$(id);});
 
 const cv=el.gc,ctx=cv.getContext("2d");
 let CS=36,P=28,CSz=520,dpr=1;
@@ -23,7 +24,7 @@ let mc=null,rc="",isH=false,myId=0,selT=0;
 let gS=false,gO=false,gA=false;
 let tC=0,tT=null;
 let board=[],cp=BK,wn=null,wc=[],lm=null,hs=[];
-let aiEnabled=false,timeRewindReady=false,ratReady=false;
+let aiEnabled=false;
 
 // Theme
 let selTheme=0;
@@ -81,20 +82,35 @@ el.btnSJ.addEventListener("click",()=>{el.ja.style.display="block";el.btnSJ.styl
 el.btnJ.addEventListener("click",()=>{const c=el.ri.value.trim();if(!c||c.length!==4||isNaN(c)){toast("输入4位房间号");return;}ss("连接...","");rc=c;isH=false;myId=2;el.btnJ.disabled=true;coM();});
 el.btnGo.addEventListener("click",()=>{if(!mc||!mc.connected){toast("断开","err");return;}send({t:"start"});if(isH)initG();});
 
+// ===== 游戏初始化 =====
 function initG(){
-  gS=true;gO=false;el.lobby.style.display="none";el.game.style.display="flex";el.cb.textContent="🟢 已连接";
+  gS=true;gO=false;
+  el.lobby.style.display="none";el.game.style.display="flex";el.game.classList.add("show");
+  el.cb.textContent="🟢 已连接";
   board=Array.from({length:BS},()=>Array(BS).fill(MT));
   cp=BK;wn=null;wc=[];lm=null;hs=[];
-  el.turnInfo.textContent="黑棋走 · 从箩筐拖出棋子";
-  resizeC();uP();db();updateBaskets();
+  el.turnInfo.textContent="你的回合 · 拖拽棋子到棋盘";
+  // 关键：确保布局稳定后再量尺寸
+  requestAnimationFrame(()=>{resizeC();uP();db();updateBaskets();});
 }
 
+// ===== Canvas 尺寸修复（黄金比例保命版）=====
 function resizeC(){
-  const r=el.boardArea.getBoundingClientRect(),s=Math.min(Math.floor(r.width),520);
+  const wrapper=el.boardWrapper;
+  if(!wrapper){cv.width=0;cv.height=0;CSz=0;return;}
+  const rect=wrapper.getBoundingClientRect();
+  if(rect.width<10||rect.height<10){CSz=0;return;}
+  const s=Math.floor(Math.min(rect.width,rect.height,600));
   dpr=window.devicePixelRatio||1;
-  cv.width=s*dpr;cv.height=s*dpr;cv.style.width=s+"px";cv.style.height=s+"px";
-  CSz=s;P=s*0.05;CS=(CSz-2*P)/(BS-1);
-  ctx.setTransform(dpr,0,0,dpr,0,0);db();
+  cv.width=s*dpr;
+  cv.height=s*dpr;
+  cv.style.width=s+"px";
+  cv.style.height=s+"px";
+  CSz=s;
+  P=s*0.05;
+  CS=(CSz-2*P)/(BS-1);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  db();
 }
 
 function ib(){board=Array.from({length:BS},()=>Array(BS).fill(MT));cp=BK;gO=false;wn=null;wc=[];lm=null;hs=[];if(gS){uP();db();updateBaskets();}}
@@ -108,14 +124,18 @@ function doUndo(){
 
 function uP(){el.btnUndo.disabled=hs.length===0;}
 function updateBaskets(){
-  const myC=cp===myColor();
-  el.bkBlack.style.display=(isH?cp===BK:cp===BK)&&!gO?"flex":"none";
-  el.bkWhite.style.display=(isH?cp===WH:cp===WH)&&!gO?"flex":"none";
-  el.turnInfo.textContent=gO?(wn===myColor()?"🎉 你赢了！":"😅 对方赢了"):(cp===myColor()?"你的回合 · 从箩筐拖出棋子":"等待对方下棋...");
+  el.bkBlack.style.display="flex";
+  el.bkWhite.style.display="flex";
+  el.colBlack=document.getElementById("colBlack");
+  el.colWhite=document.getElementById("colWhite");
+  const myTurn=cp===myColor();
+  if(el.colBlack)el.colBlack.style.opacity=(isH&&myTurn)?"1":"0.25";
+  if(el.colWhite)el.colWhite.style.opacity=(!isH&&myTurn)?"1":"0.25";
+  el.turnInfo.textContent=gO?(wn===myColor()?"🎉 你赢了！":"😅 对方赢了"):(myTurn?"你的回合 · 拖拽棋子到棋盘":"等待对方下棋...");
 }
 function myColor(){return isH?BK:WH;}
 
-// ===== Stone Basket Drag System =====
+// ===== 拖拽系统 =====
 let dragActive=false,dragColor=BK,dragR=-1,dragC=-1,dragValid=false,touchId=null;
 
 function startDrag(color,e){
@@ -134,8 +154,13 @@ function updateDrag(e){
   el.ghostStone.style.left=(e.clientX)+"px";
   el.ghostStone.style.top=(e.clientY)+"px";
   el.ghostStone.style.width=(CS*0.85)+"px";el.ghostStone.style.height=(CS*0.85)+"px";
-  if(rw>=0&&rw<BS&&c>=0&&c<BS&&board[rw][c]===MT){dragR=rw;dragC=c;dragValid=true;el.ghostStone.style.opacity="0.6";}
-  else{dragValid=false;el.ghostStone.style.opacity="0.3";}
+  if(rw>=0&&rw<BS&&c>=0&&c<BS&&board[rw][c]===MT){
+    dragR=rw;dragC=c;dragValid=true;el.ghostStone.style.opacity="0.6";
+  } else {
+    dragValid=false;el.ghostStone.style.opacity="0.3";
+  }
+  // 实时重绘预览
+  db();
 }
 
 function endDrag(e){
@@ -144,24 +169,29 @@ function endDrag(e){
   el.ghostStone.style.display="none";
   if(dragValid&&!gO&&cp===myColor()){placeMove(dragR,dragC);}
   dragValid=false;dragR=-1;dragC=-1;
+  db();
 }
 
-// Mouse events
+// 鼠标事件
 document.querySelectorAll(".bs").forEach(bs=>{
   bs.addEventListener("mousedown",e=>{
-    const col=bs.closest(".basket").id==="bkBlack"?BK:WH;
-    if(gO||cp!==myColor()||(col===BK?isH?false:true:isH?true:false))return; // simplified check
+    const col=bs.closest(".basket")?.id==="bkBlack"?BK:WH;
+    if(gO||cp!==myColor())return;
+    if(isH&&col===WH)return;
+    if(!isH&&col===BK)return;
     startDrag(col,e);
   });
 });
 document.addEventListener("mousemove",e=>{if(dragActive)updateDrag(e);});
 document.addEventListener("mouseup",e=>{if(dragActive)endDrag(e);});
 
-// Touch events
+// 触摸事件
 document.querySelectorAll(".bs").forEach(bs=>{
   bs.addEventListener("touchstart",e=>{
-    const col=bs.closest(".basket").id==="bkBlack"?BK:WH;
+    const col=bs.closest(".basket")?.id==="bkBlack"?BK:WH;
     if(gO||cp!==myColor())return;
+    if(isH&&col===WH)return;
+    if(!isH&&col===BK)return;
     const t=e.changedTouches[0];touchId=t.identifier;
     startDrag(col,{clientX:t.clientX,clientY:t.clientY});
   },{passive:false});
@@ -179,7 +209,7 @@ document.addEventListener("touchend",e=>{
   endDrag({});
 },{passive:false});
 
-// ===== Place Move =====
+// ===== 落子 =====
 function placeMove(r,c){
   if(gO||board[r][c]!==MT||cp!==myColor())return;
   board[r][c]=cp;hs.push({p:cp,r,c});lm={r,c};
@@ -219,7 +249,7 @@ function grandmasterAI(){
   }
   candidates.sort((a,b)=>b.sc-a.sc);
   const top=candidates.slice(0,10);
-
+  if(top.length===0)return null;
   let best={r:top[0].r,c:top[0].c,val:-1e9};
   for(const{ r:ir,c:ic }of top){
     board[ir][ic]=cp;
@@ -232,11 +262,9 @@ function grandmasterAI(){
 
 function minimax(depth,alpha,beta,isMax,player,lastR,lastC){
   if(depth===0)return evaluate(player,lastR,lastC);
-  // Quick check for win
   if(cwCheck(player,lastR,lastC))return isMax?100000-depth:-100000+depth;
   const opp=player===BK?WH:BK;
   if(cwCheck(opp,lastR,lastC))return isMax?-100000+depth:100000-depth;
-  
   let cands=[];
   for(let r=0;r<BS;r++)for(let c=0;c<BS;c++){
     if(board[r][c]!==MT||!isNear(r,c,1))continue;
@@ -245,7 +273,6 @@ function minimax(depth,alpha,beta,isMax,player,lastR,lastC){
   if(cands.length===0)return evaluate(player,lastR,lastC);
   cands.sort((a,b)=>b.sc-a.sc);
   cands=cands.slice(0,7);
-  
   if(isMax){
     let maxV=-1e9;
     for(const{ r,c }of cands){
@@ -326,50 +353,40 @@ el.gt.addEventListener("click",function(){
 });
 document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.key==="g"){e.preventDefault();if(gA){el.godPanel.classList.toggle("show");toast(el.godPanel.classList.contains("show")?"👑 已开":"关闭","");}}});
 
-// AI
 el.gAI.addEventListener("click",function(){
   const m=grandmasterAI();if(!m){toast("无可下位置","");return;}
   placeMove(m.r,m.c);toast("🧠 大师AI已落子 (α-β 深度3)","");
 });
 
-// Time Rewind with Deception
 el.gTime.addEventListener("click",function(){
   if(hs.length<2){toast("没有足够的棋子回退","");return;}
-  // Undo both players' last move (2 moves)
   doUndo();if(hs.length>0)doUndo();
   send({t:"undo"});send({t:"undo"});
-  // Deception: show "reconnecting" message on opponent side
-  send({t:"rat",fake:true}); // Special signal for time rewind deception
   toast("⏳ 时空倒流成功，棋子已撤回","");
-  showDecText("网络波动，正在重连及同步棋局...","");
+  showDecText("网络波动，正在重连及同步棋局...");
   setTimeout(()=>el.deceptionOverlay.classList.remove("show"),2500);
 });
 
-// Rat Thief
 el.gRat.addEventListener("click",function(){
   if(hs.length<1){toast("没有棋子可偷","");return;}
   const opp=cp===BK?WH:BK;let idx=hs.length-1;
   while(idx>=0&&hs[idx].p!==opp)idx--;
   if(idx<0){toast("没有对手的棋子","");return;}
   const tgt=hs[idx];
-  // Cheater sees: rat animation
   showRatAnim();
-  // Remove piece
   board[tgt.r][tgt.c]=MT;hs.splice(idx,1);
   lm=hs.length>0?{r:hs[hs.length-1].r,c:hs[hs.length-1].c}:null;
   gO=false;wn=null;wc=[];cp=cp===BK?WH:BK;
   db();uP();updateBaskets();
-  // Send victim deception
   send({t:"rat"});
   particles(tgt.r,tgt.c,"#ffd700",8);
   toast("🐭 侠盗老鼠已得手！","");
 });
 
-// Deception: Wind effect for victim
 function showWindDec(){
   const w=document.createElement("div");w.className="windEffect";
   document.body.appendChild(w);
-  showDecText("🌬️ 风太大了！您的棋子被吹跑了...","");
+  showDecText("🌬️ 风太大了！您的棋子被吹跑了...");
   setTimeout(()=>{w.remove();el.deceptionOverlay.classList.remove("show");},2500);
 }
 function showDecText(t){
@@ -390,7 +407,9 @@ el.btnUndo.addEventListener("click",()=>{doUndo();send({t:"undo"});updateBaskets
 el.btnRestart.addEventListener("click",()=>{ib();send({t:"restart"});updateBaskets();});
 el.btnLeave.addEventListener("click",()=>{
   if(mc){try{mc.end(true)}catch(e){}mc=null}
-  gS=false;el.game.style.display="none";el.lobby.style.display="flex";rL();
+  gS=false;
+  el.game.style.display="none";el.game.classList.remove("show");
+  el.lobby.style.display="flex";rL();
 });
 el.wok.addEventListener("click",()=>el.wo.classList.remove("show"));
 el.wo.addEventListener("click",e=>{if(e.target===el.wo)el.wo.classList.remove("show");});
@@ -409,7 +428,7 @@ function particles(r,c,color,n){
 }
 
 // ===== Game Loop =====
-function gameLoop(){db();requestAnimationFrame(gameLoop);}
+function gameLoop(){if(gS)db();requestAnimationFrame(gameLoop);}
 
 // ===== Drawing =====
 function db(){
@@ -427,6 +446,15 @@ function db(){
   if(wc.length>0){ctx.save();for(const[r,c]of wc){ctx.beginPath();ctx.arc(P+c*CS,P+r*CS,CS*0.46,0,Math.PI*2);ctx.fillStyle="rgba(255,215,0,0.12)";ctx.fill();}ctx.restore();}
   for(let r=0;r<BS;r++)for(let c=0;c<BS;c++)if(board[r][c]!==MT)ds(r,c,board[r][c],th);
   if(lm){ctx.beginPath();ctx.arc(P+lm.c*CS,P+lm.r*CS,CS*0.07,0,Math.PI*2);ctx.fillStyle="#ff4444";ctx.fill();}
+  // 拖拽落子预览
+  if(dragActive&&dragValid&&dragR>=0&&dragC>=0){
+    ctx.save();
+    ctx.beginPath();ctx.arc(P+dragC*CS,P+dragR*CS,CS*0.4,0,Math.PI*2);
+    ctx.fillStyle="rgba(255,255,255,0.18)";ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,0.4)";ctx.lineWidth=1.5;
+    ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+    ctx.restore();
+  }
   ctx.strokeStyle=th.gl;ctx.lineWidth=1.2;ctx.strokeRect(P-6,P-6,CSz-2*P+12,CSz-2*P+12);
 }
 
@@ -444,6 +472,11 @@ function ds(r,c,p,th){
 }
 
 // ===== Init =====
-function init(){board=Array.from({length:BS},()=>Array(BS).fill(MT));setTimeout(resizeC,100);db();}
+function init(){
+  board=Array.from({length:BS},()=>Array(BS).fill(MT));
+  requestAnimationFrame(gameLoop);
+}
 init();
 window.addEventListener("resize",()=>{if(gS)resizeC();});
+// 也监听 orientation change
+window.addEventListener("orientationchange",()=>{setTimeout(()=>{if(gS)resizeC();},300);});
