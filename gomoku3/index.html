@@ -1,10 +1,17 @@
-﻿<!DOCTYPE html><html lang="zh-CN"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>五子棋大师 · 侠盗风云</title><link rel="stylesheet" href="style.css">
-</head><body>
-<div id="safe">
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>五子棋大师 · 侠盗风云</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===== 大厅 ===== -->
 <div id="lobby">
-<h1>🎋 五子棋大师</h1><div class="sub">侠盗风云 · 心理博弈 🎯</div>
+<h1>🎋 五子棋大师</h1>
+<div class="sub">侠盗风云 · 心理博弈 🎯</div>
 <div class="selRow">
 <div class="lb">选择场景</div>
 <div class="opts">
@@ -20,38 +27,84 @@
 <div id="sa" style="display:none"><button id="btnGo" class="pri" style="padding:12px 36px;margin:6px">🎯 开始对弈</button></div>
 <footer>五子棋大师 v3.0</footer></div>
 
+<!-- ===== 游戏界面（三段式黄金布局）===== -->
 <div id="game" style="display:none">
-<div class="gh"><h1 id="gt">🎋 五子棋大师</h1><span id="cb">🟡 连接</span></div>
-<div class="hud">
-<div class="pc"><span class="av" id="p1a" style="cursor:pointer" title="扔鸡蛋">🟡</span><span id="p1n" style="font-weight:600;font-size:11px">我</span></div>
-<div style="display:flex;gap:3px">
-<button class="skBtn" id="btnEgg">🥚</button>
-<button class="skBtn" id="btnFlower">🌸</button>
-</div>
-<div class="pc"><span class="av" id="p2a" style="cursor:pointer" title="扔鸡蛋">🩷</span><span id="p2n" style="font-weight:600;font-size:11px">对手</span></div>
-</div>
-<div class="turnInfo" id="turnInfo">黑棋走 · 从箩筐拖出棋子</div>
-<div id="boardArea"><canvas id="gc"></canvas>
-<div id="ghostStone" style="display:none;position:fixed;z-index:50;border-radius:50%;pointer-events:none;transition:none"></div>
-</div>
-<div id="baskets">
-<div class="basket" id="bkBlack"><div class="bs bs-black"></div><span>黑子</span></div>
-<div class="basket" id="bkWhite"><div class="bs bs-white"></div><span>白子</span></div>
-</div>
-<div id="ctrl"><button id="btnUndo" disabled>↩️ 悔棋</button><button id="btnRestart">🔄 重开</button><button id="btnLeave">🚪 退出</button></div>
-<div id="godPanel"><div class="gHd">👑 上帝操控台</div>
-<div class="gBtns">
-<button id="gAI">🧠 大师AI</button>
-<button id="gTime">⏳ 时空倒流</button>
-<button id="gRat">🐭 侠盗老鼠</button>
-</div></div>
-<span id="gi" style="display:none">✨ 上帝模式已激活</span>
-</div></div>
 
+  <!-- 顶部：华丽状态栏 -->
+  <div id="header">
+    <div class="h-left">
+      <h1 id="gt">🎋 五子棋大师</h1>
+      <span id="cb">🟡</span>
+    </div>
+    <div class="h-center">
+      <div class="p-wrap">
+        <span class="av" id="p1a">🟡</span><span class="p-name" id="p1n">我</span>
+      </div>
+      <div class="h-actions">
+        <button class="skBtn" id="btnEgg">🥚</button>
+        <button class="skBtn" id="btnFlower">🌸</button>
+      </div>
+      <div class="p-wrap">
+        <span class="av" id="p2a">🩷</span><span class="p-name" id="p2n">对手</span>
+      </div>
+    </div>
+    <div class="h-right">
+      <span id="turnInfo">等待对局</span>
+    </div>
+  </div>
+
+  <!-- 中部：主战场 -->
+  <div id="main-area">
+    <!-- 左：黑子箩筐 -->
+    <div class="basket-col" id="colBlack">
+      <div class="basket" id="bkBlack">
+        <div class="basket-bowl"><div class="bs bs-black"></div></div>
+        <span class="basket-label">黑子</span>
+      </div>
+    </div>
+
+    <!-- 中间：棋盘 -->
+    <div class="board-wrapper" id="boardWrapper">
+      <canvas id="gc"></canvas>
+      <div id="ghostStone"></div>
+    </div>
+
+    <!-- 右：白子箩筐 -->
+    <div class="basket-col" id="colWhite">
+      <div class="basket" id="bkWhite">
+        <div class="basket-bowl"><div class="bs bs-white"></div></div>
+        <span class="basket-label">白子</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部：操控区 -->
+  <div id="footer">
+    <div id="ctrl">
+      <button id="btnUndo" disabled>↩️ 悔棋</button>
+      <button id="btnRestart">🔄 重开</button>
+      <button id="btnLeave">🚪 退出</button>
+    </div>
+    <div id="godPanel">
+      <div class="gHd">👑 上帝操控台</div>
+      <div class="gBtns">
+        <button id="gAI">🧠 大师AI</button>
+        <button id="gTime">⏳ 时空倒流</button>
+        <button id="gRat">🐭 侠盗老鼠</button>
+      </div>
+    </div>
+    <span id="gi" style="display:none">✨ 上帝模式已激活</span>
+  </div>
+
+</div>
+
+<!-- ===== 覆盖层 ===== -->
 <div id="deceptionOverlay"><div class="decText" id="decText"></div></div>
 <div id="ratOverlay"><div class="ratAnim" id="ratAnim">🐭<span class="rope">🪢</span></div></div>
 <div id="wo"><div class="wc"><span class="we" id="we">🎉</span><div class="wt" id="wt">你赢了！</div><button id="wok">好的 🎯</button></div></div>
 <div id="toast"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.4/dist/mqtt.min.js"></script>
 <script src="client.js"></script>
-</body></html>
+</body>
+</html>
