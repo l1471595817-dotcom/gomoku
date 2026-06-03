@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>糖果大作战 · 横版射击</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -11,51 +11,40 @@
 <div id="lobby">
 <h1>🍬 糖果大作战</h1>
 <div class="sub">和小伙伴一起发射甜蜜子弹吧 ✨</div>
-<div class="char-select">
-<div class="label">选择你的角色</div>
+<div class="char-select"><div class="label">选择你的角色</div>
 <div class="char-options">
 <div class="char-card selected" data-idx="0"><span class="emoji">🍓</span><div class="name">草莓兔兔</div></div>
 <div class="char-card" data-idx="1"><span class="emoji">🌿</span><div class="name">薄荷熊熊</div></div>
 <div class="char-card" data-idx="2"><span class="emoji">🍊</span><div class="name">橙子猫猫</div></div>
-</div>
-</div>
-<div class="lobby-btns">
-<button id="btnCreate" class="primary">🎮 创建房间</button>
-<button id="btnShowJoin" class="secondary">🔗 加入房间</button>
-</div>
-<div id="joinArea" style="display:none">
-<div class="join-row"><input id="roomInput" type="text" maxlength="4" placeholder="0000"><button id="btnJoin" class="primary" style="padding:10px 18px;font-size:14px">加入</button></div>
-</div>
-<div id="roomDisplay" style="display:none">
-<div class="room-code-box"><div class="code" id="roomCodeText">0000</div><div class="label">把房间号发给对方~</div></div>
-</div>
+</div></div>
+<div class="lobby-btns"><button id="btnCreate" class="primary">🎮 创建房间</button><button id="btnShowJoin" class="secondary">🔗 加入房间</button></div>
+<div id="joinArea" style="display:none"><div class="join-row"><input id="roomInput" type="text" maxlength="4" placeholder="0000"><button id="btnJoin" class="primary" style="padding:10px 18px;font-size:14px">加入</button></div></div>
+<div id="roomDisplay" style="display:none"><div class="room-code-box"><div class="code" id="roomCodeText">0000</div><div class="label">把房间号发给对方~</div></div></div>
 <div class="status-line" id="lobbyStatus">创建或加入一个房间开始对战 🎯</div>
 <div id="startArea" style="display:none"><button id="btnStart" class="primary" style="padding:12px 36px;font-size:16px;margin-top:6px">🎯 开始游戏</button></div>
 <footer>糖果大作战</footer>
 </div>
 <div id="game" style="display:none">
-<div class="game-header">
-<h1 id="gameTitle">🍬 糖果大作战</h1>
-<span id="connBadge">🟡 连接中</span>
-</div>
+<div class="game-header"><h1 id="gameTitle">🍬 糖果大作战</h1><span id="connBadge">🟡 连接中</span></div>
 <div class="hud">
-<div class="player-card" id="p1c"><span class="avatar" id="p1a">🍓</span><span class="pname" id="p1n">我</span><div class="hp-bar"><div class="hp-fill" id="hp1" style="width:100%"></div></div></div>
-<div class="item-btns">
-<button id="bananaBtn">🍌 香蕉皮</button>
-<button id="cakeBtn">🎂 奶油蛋糕</button>
+<div class="player-card"><span class="avatar" id="p1a">🍓</span><span class="pname" id="p1n">我</span><div class="hp-bar"><div class="hp-fill" id="hp1" style="width:100%"></div></div></div>
+<div class="item-btns-pc"><button id="bananaBtn">🍌 香蕉皮</button><button id="cakeBtn">🎂 奶油蛋糕</button></div>
+<div class="player-card"><span class="avatar" id="p2a">🌿</span><span class="pname" id="p2n">对手</span><div class="hp-bar"><div class="hp-fill" id="hp2" style="width:100%"></div></div></div>
 </div>
-<div class="player-card" id="p2c"><span class="avatar" id="p2a">🌿</span><span class="pname" id="p2n">对手</span><div class="hp-bar"><div class="hp-fill" id="hp2" style="width:100%"></div></div></div>
-</div>
+<div id="gameArea">
 <canvas id="gameCanvas"></canvas>
-<div class="controls-hint">← → 移动 &nbsp; ↑ 跳跃 &nbsp; 空格/点击 射击</div>
-<div id="godPanel">
-<div class="god-header">👑 上帝工具箱</div>
-<div class="god-btns">
-<button id="godFly">🌀 无限飞行</button>
-<button id="godAim">🎯 追踪泡泡</button>
-<button id="godGun">💥 超级加特林</button>
+<div class="controls-hint-pc">← → 移动 &nbsp; ↑ 跳跃 &nbsp; 空格/点击 射击</div>
+<div id="touchControls">
+<div id="joystickZone"><div id="joystickBase"><div id="joystickHandle"></div></div></div>
+<div id="actionBtns">
+<button class="action-btn" id="btnJump"><span>🚀</span><small>跳跃</small></button>
+<button class="action-btn" id="btnFire"><span>🔫</span><small>开火</small></button>
+<button class="action-btn" id="btnBanana"><span>🍌</span><small>香蕉</small></button>
+<button class="action-btn" id="btnCake"><span>🍰</span><small>蛋糕</small></button>
 </div>
 </div>
+</div>
+<div id="godPanel"><div class="god-header">👑 上帝工具箱</div><div class="god-btns"><button id="godFly">🌀 无限飞行</button><button id="godAim">🎯 追踪泡泡</button><button id="godGun">💥 超级加特林</button></div></div>
 <span class="god-indicator" id="godIndicator" style="display:none">✨ 上帝模式已激活</span>
 </div>
 </div>
