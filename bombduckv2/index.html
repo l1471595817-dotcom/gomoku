@@ -1,0 +1,42 @@
+﻿<!DOCTYPE html><html lang="zh-CN"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>疯狂炸弹鸭 · 究极进化</title><link rel="stylesheet" href="style.css">
+</head><body>
+<div id="safeArea">
+<div id="lobby">
+<h1>🦆 疯狂炸弹鸭</h1><div class="sub">究极进化版 ✨</div>
+<div class="selRow"><div class="selCol"><div class="lb">角色</div>
+<div class="opts"><div class="card sel" data-idx="0"><span>🟡</span><div class="nm">黄黄鸭</div></div><div class="card" data-idx="1"><span>🩷</span><div class="nm">粉粉鸭</div></div></div></div>
+<div class="selCol"><div class="lb">地图</div>
+<div class="opts"><div class="card sel" data-sidx="0"><span>🌳</span><div class="nm">草莓森林</div></div><div class="card" data-sidx="1"><span>❄️</span><div class="nm">镜面滑冰</div></div><div class="card" data-sidx="2"><span>🌋</span><div class="nm">熔岩炼狱</div></div></div></div></div>
+<div class="btns"><button id="btnC" class="pri">🎮 创建房间</button><button id="btnSJ" class="sec">🔗 加入房间</button></div>
+<div id="ja" style="display:none"><div class="jr"><input id="ri" type="text" maxlength="4" placeholder="0000"><button id="btnJ" class="pri" style="padding:10px 18px">加入</button></div></div>
+<div id="rd" style="display:none"><div class="rcb"><div class="rc" id="rct">0000</div><div class="rl">把房间号发给对方~</div></div></div>
+<div class="st" id="ls">创建或加入房间开始对战 💥</div>
+<div id="sa" style="display:none"><button id="btnGo" class="pri" style="padding:12px 36px;margin-top:4px">🎯 开始游戏</button></div>
+<footer>疯狂炸弹鸭 v2.0</footer></div>
+
+<div id="game" style="display:none">
+<div class="gh"><h1 id="gt">🦆 疯狂炸弹鸭</h1><span id="cb">🟡 连接</span></div>
+<div class="hud">
+<div class="pc"><span class="av" id="p1a">🟡</span><span class="pn" id="p1n">我</span><div class="hp-r"><div class="hp-f" id="hp1"></div></div><span class="it" id="it1"></span></div>
+<div class="pc"><span class="av" id="p2a">🩷</span><span class="pn" id="p2n">对手</span><div class="hp-r"><div class="hp-f" id="hp2"></div></div><span class="it" id="it2"></span></div>
+</div>
+<div class="gameZone">
+<div id="leftZone"><div id="joyStick" style="display:none"><div id="joyBase"><div id="joyDot"></div></div></div></div>
+<div id="centerZone"><canvas id="gc"></canvas></div>
+<div id="rightZone">
+<button class="actBtn big" id="btnBomb"><span>💣</span></button>
+<button class="actBtn sm" id="btnBanana"><span>🍌</span></button>
+<button class="actBtn sm" id="btnChili"><span>🌶️</span></button>
+</div></div>
+<div id="statext"></div>
+<div id="godPanel"><div class="ghd">👑 上帝工具箱</div><div class="gbtns"><button id="gNoc">👻 幽灵穿墙</button><button id="gNuke">☢️ 核弹引爆</button></div></div>
+<span id="gi" style="display:none">✨ 上帝模式已激活</span>
+</div></div>
+<div id="wo"><div class="wc"><span class="we" id="we">🎉</span><div class="wt" id="wt">你赢了！</div><button id="wok">好的 🎯</button></div></div>
+<div id="toast"></div>
+<div id="chiliOverlay"><div class="fog"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.4/dist/mqtt.min.js"></script>
+<script src="client.js"></script>
+</body></html>
